@@ -26,8 +26,10 @@ prometheus.yml
 參考官方[example](https://github.com/prometheus/prometheus/blob/master/documentation/examples/prometheus-kubernetes.yml)，
 ingress部分，暫時沒用到故先註解。
 
-Alert rule
+Alert
 =======
+該repositroy以設三條rule(filesystem, memory, cpu)，客戶的儲存空間快滿或負荷太重時，發alert到slack的某個channel。
+
 新版格式：(此例version 2.x故為新版格式)
 
 ```
