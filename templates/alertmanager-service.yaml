@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: alertmanager
+  labels:
+{{ include "labels" . | indent 4 }}
+spec:
+  type: {{ .Values.service.prometheusAlertmanager.type }}
+  ports:
+    - port: {{ .Values.service.prometheusAlertmanager.externalPort }}
+      targetPort: {{ .Values.service.prometheusAlertmanager.internalPort }}
+{{- if .Values.selectPort }}
+      nodePort: {{ .Values.service.prometheusAlertmanager.nodePort }}
+{{- end }}
+      protocol: TCP
+      name: alertmanager
+  selector:
+{{ include "labels.alertmanager" . | indent 4 }}

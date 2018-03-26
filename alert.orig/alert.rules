@@ -1,0 +1,44 @@
+ALERT PROBE_FAILED
+  IF probe_success == 0
+  FOR 30s
+  LABELS { severity = "critical", receiver = "slack_alert" }
+  ANNOTATIONS {
+    summary = "Service {{ $labels.kubernetes_name }} probe failed",
+    description = "{\"service\":\"{{ $labels.kubernetes_name }}\", \"namespace\":\"{{ $labels.kubernetes_namespace }}\"}",
+  }
+
+ALERT POD_RESTART
+  IF sum(kube_pod_container_status_restarts{pod!~"kube-apiserver.*",pod!~"kube-scheduler.*", pod!~"kube-controller-manager.*"}) by (pod,namespace) > 4
+  FOR 1m
+  LABELS { severity = "warning", receiver = "slack_alert" }
+  ANNOTATIONS {
+    summary = "Pod {{ $labels.pod }} restarted too much times",
+    description = "{\"pod\":\"{{ $labels.pod }}\", \"namespace\":\"{{ $labels.namespace }}\"}",
+  }
+
+ALERT NODE_LOW_DISK_SPACE
+  IF container_fs_usage_bytes{id="/",device=~"/dev/.*"} / container_fs_limit_bytes{id="/",device=~"/dev/.*"} * 100 > 90
+  FOR 10m
+  LABELS { severity = "critical", receiver = "slack_alert" }
+  ANNOTATIONS {
+    summary = "Node {{ $labels.instance }} disk will out of space",
+    description = "{\"instance\":\"{{ $labels.instance }}\"}",
+  }
+
+ALERT NODE_LOW_MEMORY
+  IF container_memory_working_set_bytes{id="/"} / machine_memory_bytes{id="/"} * 100 > 90
+  FOR 5m
+  LABELS { severity = "critical", receiver = "slack_alert" }
+  ANNOTATIONS {
+    summary = "Node {{ $labels.instance }} disk will out of space",
+    description = "{\"instance\":\"{{ $labels.instance }}\"}",
+  }
+
+ALERT NODE_DOWN
+  IF up{ job="kubernetes-nodes" } == 0
+  FOR 5m
+  LABELS { severity = "critical", receiver = "slack_alert" }
+  ANNOTATIONS {
+    summary = "Node {{ $labels.instance }} is out of service",
+    description = "{\"instance\":\"{{ $labels.instance }}\"}",
+  }

@@ -1,0 +1,52 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ template "fullname" . }}-alertmanage-dp
+  labels:
+{{ include "labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/alertmanager-cm.yaml") . | sha256sum }}
+      labels:
+{{ include "labels.alertmanager" . | indent 8 }}
+    spec:
+      containers:
+        - name: alertmanager
+          image: {{ .Values.images.prometheusAlertmanager.repository }}:{{ .Values.images.prometheusAlertmanager.tag }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.prometheusAlertmanager.internalPort }}
+          livenessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            httpGet:
+              path: /
+              port: {{ .Values.service.prometheusAlertmanager.internalPort }}
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            httpGet:
+              path: /
+              port: {{ .Values.service.prometheusAlertmanager.internalPort }}
+          args:
+            - '--config.file=/etc/alertmanager/config.yml'
+          volumeMounts:
+            - name: tz-conf
+              mountPath: /etc/localtime
+            - name: config
+              mountPath: /etc/alertmanager
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+      volumes:
+        - name: tz-conf
+          hostPath:
+            path: /etc/localtime
+        - name: config
+          configMap:
+            name: {{ template "fullname" . }}-alertmanager-cm

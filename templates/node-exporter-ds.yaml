@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ template "fullname" . }}-node-exporter-ds
+  labels:
+{{ include "labels" . | indent 4 }}
+spec:
+  template:
+    metadata:
+      name: prometheus-node-exporter
+      labels:
+{{ include "labels.nodeExporter" . | indent 8 }}
+    spec:
+      hostNetwork: true
+      hostPID: true
+      containers:
+        - name: node-exporter
+          image: {{ .Values.images.prometheusNodeExporter.repository }}:{{ .Values.images.prometheusNodeExporter.tag }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.prometheusNodeExporter.internalPort }}
+          livenessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 60
+            tcpSocket:
+              port: {{ .Values.service.prometheusNodeExporter.internalPort }}
+          readinessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            tcpSocket:
+              port: {{ .Values.service.prometheusNodeExporter.internalPort }}
+          volumeMounts:
+            - name: tz-conf
+              mountPath: /etc/localtime
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+      volumes:
+        - name: tz-conf
+          hostPath:
+            path: /etc/localtime

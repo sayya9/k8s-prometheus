@@ -1,0 +1,100 @@
+global:
+  image:
+    pullPolicy: Always
+  volumes:
+    keep: false
+  storageClassName: rbd
+replicaCount: 1
+images:
+  prometheus:
+    repository: prom/prometheus
+    tag: v2.1.0
+    recordTime: 72h
+    recordInterval: 10s
+  prometheusNodeExporter:
+    repository: prom/node-exporter
+    tag: v0.15.2
+  prometheusBlackboxExporter:
+    repository: prom/blackbox-exporter
+    tag: v0.11.0
+  prometheusAlertmanager:
+    repository: prom/alertmanager
+    tag: v0.14.0
+  kubeStateMetrics:
+    repository: gcr.io/google_containers/kube-state-metrics
+    tag: v1.2.0
+service:
+  prometheus:
+    name: prometheus
+    type: NodePort
+    externalPort: 9090
+    internalPort: 9090
+    nodePort: 30031
+  prometheusNodeExporter:
+    name: node-exporter
+    type: ClusterIP
+    clusterIP: None
+    externalPort: 9100
+    internalPort: 9100
+  prometheusBlackboxExporter:
+    name: blackbox
+    type: ClusterIP
+    externalPort: 80
+    internalPort: 9115
+  prometheusAlertmanager:
+    name: alertmanager
+    type: NodePort
+    externalPort: 9093
+    internalPort: 9093
+    nodePort: 30032
+  kubeStateMetrics:
+    name: kube-state-metrics
+    type: ClusterIP
+    externalPort: 8080
+    internalPort: 8080
+slackApiUrl: https://slack.com/api/
+slackChannel: '#alert'
+web_hook: http://k8s-alert-controller.kube-system.svc/webhook
+#resources:
+#  prometheus:
+#    limits:
+#      cpu: 2
+#      memory: 4Gi
+#    requests:
+#      cpu: 500m
+#      memory: 512Mi
+#  prometheusNodeExporter:
+#    limits:
+#      cpu: 250m
+#      memory: 256Mi
+#    requests:
+#      cpu: 100m
+#      memory: 128Mi
+#  prometheusBlackboxExporter:
+#    limits:
+#      cpu: 250m
+#      memory: 256Mi
+#    requests:
+#      cpu: 100m
+#      memory: 128Mi
+#  prometheusAlertmanager:
+#    limits:
+#      cpu: 250m
+#      memory: 256Mi
+#    requests:
+#      cpu: 100m
+#      memory: 128Mi
+#  kubeStateMetrics:
+#    limits:
+#      cpu: 250m
+#      memory: 256Mi
+#    requests:
+#      cpu: 100m
+#      memory: 128Mi
+volumes:
+  prometheus:
+    storageClassName: rbd
+    accessModes: ReadWriteOnce
+    size: 20Gi
+    mountPath: /prometheus
+selectPort: true

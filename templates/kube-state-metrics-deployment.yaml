@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ template "fullname" . }}-kube-state-metrics-dp
+  labels:
+{{ include "labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+{{ include "labels.kubeStateMetrics" . | indent 8 }}
+    spec:
+      serviceAccount: kube-state-metrics
+      containers:
+        - name: kube-state-metrics
+          image: {{ .Values.images.kubeStateMetrics.repository }}:{{ .Values.images.kubeStateMetrics.tag }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.kubeStateMetrics.internalPort }}
+          livenessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 60
+            tcpSocket:
+              port: {{ .Values.service.kubeStateMetrics.internalPort }}
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            tcpSocket:
+              port: {{ .Values.service.kubeStateMetrics.internalPort }}
+          volumeMounts:
+            - name: tz-conf
+              mountPath: /etc/localtime
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+      volumes:
+        - name: tz-conf
+          hostPath:
+            path: /etc/localtime

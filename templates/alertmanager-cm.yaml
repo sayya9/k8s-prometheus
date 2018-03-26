@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ template "fullname" . }}-alertmanager-cm
+data:
+  config.yml: |-
+    route:
+      group_by: ['job']
+      receiver: slack_alert
+      routes:
+      - match:
+          team: node
+        receiver: slack_alert
+    receivers:
+    - name: slack_alert
+      slack_configs:
+      - api_url: '{{ required "https://slack.com/api/" .Values.slackApiUrl }}'
+        channel: {{ .Values.slackChannel }}
+        send_resolved: true

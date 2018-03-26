@@ -1,0 +1,69 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ template "fullname" . }}-prometheus-dp
+  labels:
+{{ include "labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/prometheus-cm.yaml") . | sha256sum }}
+      labels:
+{{ include "labels.prometheus" . | indent 8 }}
+    spec:
+      serviceAccount: prometheus
+      initContainers:
+        - name: chown
+          image: busybox:latest
+          command: ['sh', '-c', 'chown nobody:nogroup {{ .Values.volumes.prometheus.mountPath }}']
+          volumeMounts:
+            - name: tz-conf
+              mountPath: /etc/localtime
+            - name: data
+              mountPath: {{ .Values.volumes.prometheus.mountPath }}
+      containers:
+        - name: prometheus-node
+          image: {{ .Values.images.prometheus.repository }}:{{ .Values.images.prometheus.tag }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.prometheus.internalPort }}
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 8
+            httpGet:
+              path: /
+              port: {{ .Values.service.prometheus.internalPort }}
+          readinessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            httpGet:
+              path: /
+              port: {{ .Values.service.prometheus.internalPort }}
+          args:
+            - '--storage.tsdb.retention={{ .Values.images.prometheus.recordTime }}'
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path={{ .Values.volumes.prometheus.mountPath }}'
+          volumeMounts:
+            - name: tz-conf
+              mountPath: /etc/localtime
+            - name: config
+              mountPath: /etc/prometheus
+            - name: data
+              mountPath: {{ .Values.volumes.prometheus.mountPath }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+      volumes:
+        - name: tz-conf
+          hostPath:
+            path: /etc/localtime
+        - name: config
+          configMap:
+            name: {{ template "fullname" . }}-prometheus-cm
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Chart.Name }}-prometheus
