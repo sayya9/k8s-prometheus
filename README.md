@@ -17,7 +17,7 @@ INSTALL
 ```
 git clone https://github.com/sayya9/k8s-prometheus.git
 cd k8s-prometheus
-helm install -n your_release_name --namespace=your_namespace .
+helm install -n your_release_name --namespace=your_namespace --set=slackApiUrl=https://hooks.slack.com/services/your_webhook .
 ```
 
 prometheus.yml
