@@ -1,3 +1,4 @@
+{{- if .Values.alertmanager.enabled }}
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -50,3 +51,4 @@ spec:
         - name: config
           configMap:
             name: {{ template "fullname" . }}-alertmanager-cm
+{{ end }}

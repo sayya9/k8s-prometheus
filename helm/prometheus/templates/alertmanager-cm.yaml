@@ -1,3 +1,4 @@
+{{- if .Values.alertmanager.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -18,3 +19,4 @@ data:
       - api_url: '{{ required "https://slack.com/api/" .Values.slackApiUrl }}'
         channel: {{ .Values.slackChannel }}
         send_resolved: true
+{{ end }}

@@ -97,4 +97,6 @@ volumes:
     accessModes: ReadWriteOnce
     size: 20Gi
     mountPath: /prometheus
+alertmanager:
+  enable: false
 selectPort: true
