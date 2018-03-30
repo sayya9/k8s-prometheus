@@ -16,15 +16,22 @@ INSTALL
 
 ```
 git clone https://github.com/sayya9/k8s-prometheus.git
-cd k8s-prometheus
+cd k8s-prometheus/helm/prometheus
 helm install -n your_release_name --namespace=your_namespace --set=slackApiUrl=https://hooks.slack.com/services/your_webhook .
 ```
 
 prometheus.yml
 =======
-[prometheus.yml](https://github.com/sayya9/k8s-prometheus/blob/master/templates/prometheus-cm.yaml)的部分，
+[prometheus.yml](https://github.com/sayya9/k8s-prometheus/blob/master/helm/prometheus/templates/prometheus-cm.yaml)的部分，
 參考官方[example](https://github.com/prometheus/prometheus/blob/master/documentation/examples/prometheus-kubernetes.yml)，
 ingress部分，暫時沒用到故先註解。
+
+Slack Setup
+=======
+
+前往[incoming webhook integration](https://my.slack.com/services/new/incoming-webhook)登入你的 workspace，選擇要發送alert的channel，並創建webhook url。
+
+詳細可以參考：https://www.robustperception.io/using-slack-with-the-alertmanager/
 
 Alert
 =======
