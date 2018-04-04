@@ -8,8 +8,8 @@ replicaCount: 1
 images:
   prometheus:
     repository: prom/prometheus
-    tag: v2.1.0
-    recordTime: 72h
+    tag: v2.2.1
+    recordTime: 720h
     recordInterval: 10s
   prometheusNodeExporter:
     repository: prom/node-exporter
@@ -95,7 +95,7 @@ volumes:
   prometheus:
     storageClassName: rbd
     accessModes: ReadWriteOnce
-    size: 20Gi
+    size: 50Gi
     mountPath: /prometheus
 alertmanager:
   enable: false
