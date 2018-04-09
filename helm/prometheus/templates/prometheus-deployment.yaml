@@ -18,6 +18,7 @@ spec:
       initContainers:
         - name: chown
           image: busybox:latest
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           command: ['sh', '-c', 'chown nobody:nogroup {{ .Values.volumes.prometheus.mountPath }}']
           volumeMounts:
             - name: tz-conf
