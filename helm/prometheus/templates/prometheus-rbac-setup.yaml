@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
-  name: prometheus
+  name: prometheus-{{ .Release.Name }}
 rules:
 - apiGroups: [""]
   resources:
@@ -28,11 +28,11 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: prometheus
+  name: prometheus-{{ .Release.Name }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: prometheus
+  name: prometheus-{{ .Release.Name }}
 subjects:
 - kind: ServiceAccount
   name: prometheus
